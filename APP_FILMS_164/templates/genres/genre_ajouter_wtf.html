@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %} Ajouter un ordinateur {% endblock %}
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <p>
+                Ajouter un nouvel ordinateur
+            </p>
+            <form action="" method="POST" novalidate>
+                <!-- Protection contre les attaques Cross-Site Request Forgery (CSRF) -->
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    <p>
+                        {{ form.com_hostname.label }}<br>
+                        {{ form.com_hostname(size=32) }}<br>
+                        {% for error in form.com_hostname.errors %}
+                            <span style="color: red;">{{ error }}</span><br>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.com_ip_address.label }}<br>
+                        {{ form.com_ip_address(size=32) }}<br>
+                        {% for error in form.com_ip_address.errors %}
+                            <span style="color: red;">{{ error }}</span><br>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.com_os.label }}<br>
+                        {{ form.com_os(size=32) }}<br>
+                        {% for error in form.com_os.errors %}
+                            <span style="color: red;">{{ error }}</span><br>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.com_processor.label }}<br>
+                        {{ form.com_processor(size=32) }}<br>
+                        {% for error in form.com_processor.errors %}
+                            <span style="color: red;">{{ error }}</span><br>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {{ form.com_ram.label }}<br>
+                        {{ form.com_ram(size=32) }}<br>
+                        {% for error in form.com_ram.errors %}
+                            <span style="color: red;">{{ error }}</span><br>
+                        {% endfor %}
+                    </p>
+                </div>
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
