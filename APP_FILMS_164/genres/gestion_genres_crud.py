@@ -182,8 +182,8 @@ def genre_update_wtf():
             form_update.date_genre_wtf_essai.data = data_nom_genre["description_c"]
 
     except Exception as Exception_genre_update_wtf:
-        raise ExceptionGenreUpdateWtf(f"fichier : {Path(_file_).name}  ;  "
-                                      f"{genre_update_wtf._name_} ; "
+        raise ExceptionGenreUpdateWtf(f"fichier : {Path(__file__).name}  ;  "
+                                      f"{genre_update_wtf.__name__} ; "
                                       f"{Exception_genre_update_wtf}")
 
     return render_template("genres/genre_update_wtf.html", form_update=form_update)
@@ -193,7 +193,7 @@ def genre_delete_wtf():
     data_films_attribue_genre_delete = None
     btn_submit_del = None
     id_genre_delete = request.values['id_genre_btn_delete_html']
-    form_delete = FormWTFDeleteGenre()
+    form_delete = FormWTFDeleteComputer()
     try:
         print(" on submit ", form_delete.validate_on_submit())
         if request.method == "POST" and form_delete.validate_on_submit():
@@ -243,8 +243,8 @@ def genre_delete_wtf():
             btn_submit_del = False
 
     except Exception as Exception_genre_delete_wtf:
-        raise ExceptionGenreDeleteWtf(f"fichier : {Path(_file_).name}  ;  "
-                                      f"{genre_delete_wtf._name_} ; "
+        raise ExceptionComputerDeleteWtf(f"fichier : {Path(__file__).name}  ;  "
+                                      f"{genre_delete_wtf.__name__} ; "
                                       f"{Exception_genre_delete_wtf}")
 
     return render_template("genres/genre_delete_wtf.html",
