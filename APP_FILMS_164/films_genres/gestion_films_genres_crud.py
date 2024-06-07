@@ -32,32 +32,38 @@ def films_genres_afficher(id_film_sel):
     if request.method == "GET":
         try:
             with DBconnection() as mc_afficher:
-                strsql_genres_films_afficher_data = """SELECT id_film, nom_film, duree_film, description_film, cover_link_film, date_sortie_film,
-                                                            GROUP_CONCAT(intitule_genre) as GenresFilms FROM t_genre_film
-                                                            RIGHT JOIN t_film ON t_film.id_film = t_genre_film.fk_film
-                                                            LEFT JOIN t_genre ON t_genre.id_genre = t_genre_film.fk_genre
-                                                            GROUP BY id_film"""
+                strsql_computers_notes_afficher_data = """SELECT c.idComputer, 
+                                                           c.comHostname, 
+                                                           c.comIPAddress, 
+                                                           c.comOS, 
+                                                           c.comProcessor, 
+                                                           c.comRAM,
+                                                        GROUP_CONCAT(n.notContent SEPARATOR ', ') AS ComputerNotes 
+                                                        FROM t_computer_note cn
+                                                        RIGHT JOIN t_computer c ON c.idComputer = cn.fk_computer
+                                                        LEFT JOIN t_note n ON n.idNote = cn.fk_note
+                                                        GROUP BY c.idComputer"""
                 if id_film_sel == 0:
                     # le paramètre 0 permet d'afficher tous les films
                     # Sinon le paramètre représente la valeur de l'id du film
-                    mc_afficher.execute(strsql_genres_films_afficher_data)
+                    mc_afficher.execute(strsql_computers_notes_afficher_data)
                 else:
                     # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
-                    valeur_id_film_selected_dictionnaire = {"value_id_film_selected": id_film_sel}
+                    valeur_id_computer_selected_dictionnaire = {"value_id_computer_selected": id_film_sel}
                     # En MySql l'instruction HAVING fonctionne comme un WHERE... mais doit être associée à un GROUP BY
                     # L'opérateur += permet de concaténer une nouvelle valeur à la valeur de gauche préalablement définie.
-                    strsql_genres_films_afficher_data += """ HAVING id_film= %(value_id_film_selected)s"""
+                    strsql_computers_notes_afficher_data += """ HAVING idComputer = %(value_id_computer_selected)s"""
 
-                    mc_afficher.execute(strsql_genres_films_afficher_data, valeur_id_film_selected_dictionnaire)
+                    mc_afficher.execute(strsql_computers_notes_afficher_data, valeur_id_computer_selected_dictionnaire)
 
                 # Récupère les données de la requête.
-                data_genres_films_afficher = mc_afficher.fetchall()
-                print("data_genres ", data_genres_films_afficher, " Type : ", type(data_genres_films_afficher))
+                data_computers_notes_afficher = mc_afficher.fetchall()
+                print("data_computers_notes: ", data_computers_notes_afficher, " Type: ", type(data_computers_notes_afficher))
 
                 # Différencier les messages.
-                if not data_genres_films_afficher and id_film_sel == 0:
+                if not data_computers_notes_afficher and id_film_sel == 0:
                     flash("""La table "t_film" est vide. !""", "warning")
-                elif not data_genres_films_afficher and id_film_sel > 0:
+                elif not data_computers_notes_afficher and id_film_sel > 0:
                     # Si l'utilisateur change l'id_film dans l'URL et qu'il ne correspond à aucun film
                     flash(f"Le film {id_film_sel} demandé n'existe pas !!", "warning")
                 else:
@@ -67,9 +73,9 @@ def films_genres_afficher(id_film_sel):
             raise ExceptionFilmsGenresAfficher(f"fichier : {Path(__file__).name}  ;  {films_genres_afficher.__name__} ;"
                                                f"{Exception_films_genres_afficher}")
 
-    print("films_genres_afficher  ", data_genres_films_afficher)
+    print("films_genres_afficher  ", data_computers_notes_afficher)
     # Envoie la page "HTML" au serveur.
-    return render_template("films_genres/films_genres_afficher.html", data=data_genres_films_afficher)
+    return render_template("films_genres/films_genres_afficher.html", data=data_computers_notes_afficher)
 
 
 """
@@ -93,63 +99,63 @@ def edit_genre_film_selected():
     if request.method == "GET":
         try:
             with DBconnection() as mc_afficher:
-                strsql_genres_afficher = """SELECT id_genre, intitule_genre FROM t_genre ORDER BY id_genre ASC"""
-                mc_afficher.execute(strsql_genres_afficher)
-            data_genres_all = mc_afficher.fetchall()
-            print("dans edit_genre_film_selected ---> data_genres_all", data_genres_all)
+                strsql_notes_afficher = """SELECT idNote, notContent FROM t_note ORDER BY idNote ASC"""
+                mc_afficher.execute(strsql_notes_afficher)
+            data_computers_all = mc_afficher.fetchall()
+            print("dans edit_computer_note_selected ---> data_computers_all", data_computers_all)
 
             # Récupère la valeur de "id_film" du formulaire html "films_genres_afficher.html"
             # l'utilisateur clique sur le bouton "Modifier" et on récupère la valeur de "id_film"
             # grâce à la variable "id_film_genres_edit_html" dans le fichier "films_genres_afficher.html"
             # href="{{ url_for('edit_genre_film_selected', id_film_genres_edit_html=row.id_film) }}"
-            id_film_genres_edit = request.values['id_film_genres_edit_html']
+            id_note_computers_edit = request.values['id_film_computers_edit_html']
 
             # Mémorise l'id du film dans une variable de session
             # (ici la sécurité de l'application n'est pas engagée)
             # il faut éviter de stocker des données sensibles dans des variables de sessions.
-            session['session_id_film_genres_edit'] = id_film_genres_edit
+            session['session_id_note_computers_edit'] = id_note_computers_edit
 
             # Constitution d'un dictionnaire pour associer l'id du film sélectionné avec un nom de variable
-            valeur_id_film_selected_dictionnaire = {"value_id_film_selected": id_film_genres_edit}
+            valeur_id_note_selected_dictionnaire = {"value_id_note_selected": id_note_computers_edit}
 
             # Récupère les données grâce à 3 requêtes MySql définie dans la fonction genres_films_afficher_data
             # 1) Sélection du film choisi
             # 2) Sélection des genres "déjà" attribués pour le film.
             # 3) Sélection des genres "pas encore" attribués pour le film choisi.
             # ATTENTION à l'ordre d'assignation des variables retournées par la fonction "genres_films_afficher_data"
-            data_genre_film_selected, data_genres_films_non_attribues, data_genres_films_attribues = \
-                genres_films_afficher_data(valeur_id_film_selected_dictionnaire)
+            data_computer_note_selected, data_computers_notes_non_attribues, data_computers_notes_attribues = \
+                genres_films_afficher_data(valeur_id_note_selected_dictionnaire)
 
-            print(data_genre_film_selected)
-            lst_data_film_selected = [item['id_film'] for item in data_genre_film_selected]
-            print("lst_data_film_selected  ", lst_data_film_selected,
-                  type(lst_data_film_selected))
+            print(data_computer_note_selected)
+            lst_data_computer_selected = [item['idNote'] for item in data_computer_note_selected]
+            print("lst_data_film_selected  ", lst_data_computer_selected,
+                  type(lst_data_computer_selected))
 
             # Dans le composant "tags-selector-tagselect" on doit connaître
             # les genres qui ne sont pas encore sélectionnés.
-            lst_data_genres_films_non_attribues = [item['id_genre'] for item in data_genres_films_non_attribues]
-            session['session_lst_data_genres_films_non_attribues'] = lst_data_genres_films_non_attribues
-            print("lst_data_genres_films_non_attribues  ", lst_data_genres_films_non_attribues,
-                  type(lst_data_genres_films_non_attribues))
+            lst_data_computers_notes_non_attribues = [item['idComputer'] for item in data_computers_notes_non_attribues]
+            session['session_lst_data_computers_notes_non_attribues'] = lst_data_computers_notes_non_attribues
+            print("lst_data_computers_notes_non_attribues  ", lst_data_computers_notes_non_attribues,
+                  type(lst_data_computers_notes_non_attribues))
 
             # Dans le composant "tags-selector-tagselect" on doit connaître
             # les genres qui sont déjà sélectionnés.
-            lst_data_genres_films_old_attribues = [item['id_genre'] for item in data_genres_films_attribues]
-            session['session_lst_data_genres_films_old_attribues'] = lst_data_genres_films_old_attribues
-            print("lst_data_genres_films_old_attribues  ", lst_data_genres_films_old_attribues,
-                  type(lst_data_genres_films_old_attribues))
+            lst_data_computers_notes_old_attribues = [item['idComputer'] for item in data_computers_notes_attribues]
+            session['session_lst_data_genres_films_old_attribues'] = lst_data_computers_notes_old_attribues
+            print("lst_data_genres_films_old_attribues  ", lst_data_computers_notes_old_attribues,
+                  type(lst_data_computers_notes_old_attribues))
 
-            print(" data data_genre_film_selected", data_genre_film_selected, "type ", type(data_genre_film_selected))
-            print(" data data_genres_films_non_attribues ", data_genres_films_non_attribues, "type ",
-                  type(data_genres_films_non_attribues))
-            print(" data_genres_films_attribues ", data_genres_films_attribues, "type ",
-                  type(data_genres_films_attribues))
+            print(" data data_computer_note_selected", data_computer_note_selected, "type ", type(data_computers_notes_non_attribues))
+            print(" data data_computers_notes_non_attribues ", data_computers_notes_non_attribues, "type ",
+                  type(data_computers_notes_non_attribues))
+            print(" data_computers_notes_attribues ", data_computers_notes_attribues, "type ",
+                  type(data_computers_notes_attribues))
 
             # Extrait les valeurs contenues dans la table "t_genres", colonne "intitule_genre"
             # Le composant javascript "tagify" pour afficher les tags n'a pas besoin de l'id_genre
-            lst_data_genres_films_non_attribues = [item['intitule_genre'] for item in data_genres_films_non_attribues]
-            print("lst_all_genres gf_edit_genre_film_selected ", lst_data_genres_films_non_attribues,
-                  type(lst_data_genres_films_non_attribues))
+            data_computers_notes_non_attribues = [item['intitule_genre'] for item in data_computers_notes_non_attribues]
+            print("lst_all_genres gf_edit_genre_film_selected ", lst_data_computers_notes_non_attribues,
+                  type(lst_data_computers_notes_non_attribues))
 
         except Exception as Exception_edit_genre_film_selected:
             raise ExceptionEditGenreFilmSelected(f"fichier : {Path(__file__).name}  ;  "
@@ -157,17 +163,17 @@ def edit_genre_film_selected():
                                                  f"{Exception_edit_genre_film_selected}")
 
     return render_template("films_genres/films_genres_modifier_tags_dropbox.html",
-                           data_genres=data_genres_all,
-                           data_film_selected=data_genre_film_selected,
-                           data_genres_attribues=data_genres_films_attribues,
-                           data_genres_non_attribues=data_genres_films_non_attribues)
+                           data_genres=data_computers_all,
+                           data_film_selected=data_computer_note_selected,
+                           data_genres_attribues=data_computers_notes_attribues,
+                           data_genres_non_attribues=data_computers_notes_non_attribues)
 
 
 """
     nom: update_genre_film_selected
 
     Récupère la liste de tous les genres du film sélectionné par le bouton "MODIFIER" de "films_genres_afficher.html"
-    
+
     Dans une liste déroulante particulière (tags-selector-tagselect), on voit :
     1) Tous les genres contenus dans la "t_genre".
     2) Les genres attribués au film selectionné.
@@ -263,7 +269,7 @@ def update_genre_film_selected():
 
 
 """
-    nom: genres_films_afficher_data
+    nom: computers_notes_afficher_data
 
     Récupère la liste de tous les genres du film sélectionné par le bouton "MODIFIER" de "films_genres_afficher.html"
     Nécessaire pour afficher tous les "TAGS" des genres, ainsi l'utilisateur voit les genres à disposition
@@ -272,55 +278,69 @@ def update_genre_film_selected():
 """
 
 
-def genres_films_afficher_data(valeur_id_film_selected_dict):
-    print("valeur_id_film_selected_dict...", valeur_id_film_selected_dict)
+def genres_films_afficher_data(valeur_id_note_selected_dict):
+    print("valeur_id_note_selected_dict...", valeur_id_note_selected_dict)
     try:
+        strsql_note_selected = """SELECT 
+                                        t_note.idNote, 
+                                        t_note.notContent, 
+                                        t_note.notCreationDate, 
+                                        t_note.notPriority, 
+                                        t_note.notStatus, 
+                                        t_note.idObject, 
+                                        GROUP_CONCAT(t_computer.idComputer) as Computers 
+                                    FROM 
+                                        t_computer_note 
+                                    INNER JOIN 
+                                        t_note ON t_note.idNote = t_computer_note.fk_note 
+                                    INNER JOIN 
+                                        t_computer ON t_computer.idComputer = t_computer_note.fk_computer 
+                                    WHERE 
+                                        t_note.idNote = %(value_id_film_selected)s"""
 
-        strsql_film_selected = """SELECT id_film, nom_film, duree_film, description_film, cover_link_film, date_sortie_film, GROUP_CONCAT(id_genre) as GenresFilms FROM t_genre_film
-                                        INNER JOIN t_film ON t_film.id_film = t_genre_film.fk_film
-                                        INNER JOIN t_genre ON t_genre.id_genre = t_genre_film.fk_genre
-                                        WHERE id_film = %(value_id_film_selected)s"""
+        strsql_computers_notes_non_attribues = """SELECT idComputer, comHostname
+                                                    FROM t_computer
+                                                    WHERE idComputer NOT IN (
+                                                        SELECT fk_computer
+                                                        FROM t_computer_note
+                                                        INNER JOIN t_note ON t_note.idNote = t_computer_note.fk_note
+                                                        WHERE idNote = %(value_id_film_selected)s)"""
 
-        strsql_genres_films_non_attribues = """SELECT id_genre, intitule_genre FROM t_genre WHERE id_genre not in(SELECT id_genre as idGenresFilms FROM t_genre_film
-                                                    INNER JOIN t_film ON t_film.id_film = t_genre_film.fk_film
-                                                    INNER JOIN t_genre ON t_genre.id_genre = t_genre_film.fk_genre
-                                                    WHERE id_film = %(value_id_film_selected)s)"""
-
-        strsql_genres_films_attribues = """SELECT id_film, id_genre, intitule_genre FROM t_genre_film
-                                            INNER JOIN t_film ON t_film.id_film = t_genre_film.fk_film
-                                            INNER JOIN t_genre ON t_genre.id_genre = t_genre_film.fk_genre
-                                            WHERE id_film = %(value_id_film_selected)s"""
-
+        strsql_computers_notes_attribues = """SELECT idNote, idComputer, comHostname, comIPAddress, comOS, comProcessor, comRAM
+                                                FROM t_computer_note
+                                                INNER JOIN t_note ON t_note.idNote = t_computer_note.fk_note
+                                                INNER JOIN t_computer ON t_computer.idComputer = t_computer_note.fk_computer
+                                                WHERE idNote = %(value_id_film_selected)s"""
         # Du fait de l'utilisation des "context managers" on accède au curseur grâce au "with".
         with DBconnection() as mc_afficher:
             # Envoi de la commande MySql
-            mc_afficher.execute(strsql_genres_films_non_attribues, valeur_id_film_selected_dict)
+            mc_afficher.execute(strsql_computers_notes_non_attribues, valeur_id_note_selected_dict)
             # Récupère les données de la requête.
-            data_genres_films_non_attribues = mc_afficher.fetchall()
+            print(strsql_computers_notes_non_attribues)
+            data_computers_notes_non_attribues = mc_afficher.fetchall()
             # Affichage dans la console
-            print("genres_films_afficher_data ----> data_genres_films_non_attribues ", data_genres_films_non_attribues,
+            print("computers_notes_afficher_data ----> data_computers_notes_non_attribues ", data_computers_notes_non_attribues,
                   " Type : ",
-                  type(data_genres_films_non_attribues))
+                  type(data_computers_notes_non_attribues))
+            # Envoi de la commande MySql
+            mc_afficher.execute(strsql_note_selected, valeur_id_note_selected_dict)
+            # Récupère les données de la requête.
+            data_note_selected = mc_afficher.fetchall()
+            # Affichage dans la console
+            print("data_note_selected  ", data_note_selected, " Type : ", type(data_note_selected))
 
             # Envoi de la commande MySql
-            mc_afficher.execute(strsql_film_selected, valeur_id_film_selected_dict)
+            mc_afficher.execute(strsql_computers_notes_attribues, valeur_id_note_selected_dict)
             # Récupère les données de la requête.
-            data_film_selected = mc_afficher.fetchall()
+            data_computers_notes_attribues = mc_afficher.fetchall()
             # Affichage dans la console
-            print("data_film_selected  ", data_film_selected, " Type : ", type(data_film_selected))
-
-            # Envoi de la commande MySql
-            mc_afficher.execute(strsql_genres_films_attribues, valeur_id_film_selected_dict)
-            # Récupère les données de la requête.
-            data_genres_films_attribues = mc_afficher.fetchall()
-            # Affichage dans la console
-            print("data_genres_films_attribues ", data_genres_films_attribues, " Type : ",
-                  type(data_genres_films_attribues))
+            print("data_computers_notes_attribues ", data_computers_notes_attribues, " Type : ",
+                  type(data_computers_notes_attribues))
 
             # Retourne les données des "SELECT"
-            return data_film_selected, data_genres_films_non_attribues, data_genres_films_attribues
+            return data_note_selected, data_computers_notes_non_attribues, data_computers_notes_attribues
 
-    except Exception as Exception_genres_films_afficher_data:
+    except Exception as Exception_computers_notes_afficher_data:
         raise ExceptionGenresFilmsAfficherData(f"fichier : {Path(__file__).name}  ;  "
                                                f"{genres_films_afficher_data.__name__} ; "
-                                               f"{Exception_genres_films_afficher_data}")
+                                               f"{Exception_computers_notes_afficher_data}")

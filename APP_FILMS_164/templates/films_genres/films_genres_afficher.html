@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %} Afficher FILMS {% endblock %}
+{% block title %} Afficher ORDINATEURS {% endblock %}
 {% block body %}
 <div class="container">
 	<div class="col-md-12">
@@ -7,23 +7,26 @@
             {% if data %}
 				<thead>
 					<tr>
-						<th class="" >
-						  Id
+						<th class="">
+						  ID
 						</th>
-						<th class="" >
-						  Nom
+						<th class="">
+						  Nom d'hôte
 						</th>
-						<th class="" >
-						  Durée
+						<th class="">
+						  Adresse IP
 						</th>
-						<th class="" >
-						  Date de sortie
+						<th class="">
+						  Système d'exploitation
 						</th>
-						<th class="" >
-						  Description
+						<th class="">
+						  Processeur
 						</th>
-						<th class="" >
-						  Affiche
+						<th class="">
+						  RAM
+						</th>
+						<th>
+							Note
 						</th>
 					</tr>
 				</thead>
@@ -31,56 +34,55 @@
 			{% for row in data %}
 			<tbody>
 				<tr>
-					  <th class="align-middle">
-						  {{ row.id_film }}
-					  </th>
-					  <th class="align-middle">
-						{{ row.nom_film }}
-					  </th>
-					  <th class="align-middle">
-						{{ row.duree_film|default("", True) }}
-					  </th>
-					  <th class="align-middle">
-						{{ row.date_sortie_film|default("", True) }}
-					  </th>
-					  <th class="align-middle">
-						{{ row.description_film|default("", True) }}
-					  </th>
-					  <th class="align-middle">
-						<img class="img" src={{ row.cover_link_film|default(None, True) }} style="border: 0;display:block; width:150px; max-height:auto;"  alt = "image masquée FFP8 (in COVID-19 Memory) (absente) mod 164">
-					  </th>
-					  <th class="align-middle">
-						<a class="btn btn-primary" href="{{ url_for('film_add_wtf') }}" role="button">Ajouter</a>
-					  </th>
-					  <th class="align-middle">
-						<a class="btn btn-warning" href="{{ url_for('film_update_wtf', id_film_btn_edit_html=row.id_film) }}" role="button">Edit</a>
-					  </th>
-					  <th class="align-middle">
-						<a class="btn btn-danger" href="{{ url_for('film_delete_wtf', id_film_btn_delete_html=row.id_film ) }}" role="button">Delete</a>
-					  </th>
-					<tr>
-						<td class="align-middle">
-							<a class="btn btn-warning" href="{{ url_for('edit_genre_film_selected', id_film_genres_edit_html=row.id_film) }}" role="button">Modifier</a>
-						</td>
-						<td class="align-middle" colspan="5">
-							{{ row.GenresFilms|default("PAS DE GENRES", True) }}
-						</td>
-					</tr>
+					<th class="align-middle">
+						  {{ row.idComputer }}
+					</th>
+					<th class="align-middle">
+						{{ row.comHostname }}
+					</th>
+					<th class="align-middle">
+						{{ row.comIPAddress }}
+					</th>
+					<th class="align-middle">
+						{{ row.comOS }}
+					</th>
+					<th class="align-middle">
+						{{ row.comProcessor }}
+					</th>
+					<th class="align-middle">
+						{{ row.comRAM }}</th>
+					<th class="align-middle">
+						{{ row.idObject }}
+					</th>
+					<th class="align-middle">
+						{{ row.ComputerNotes|default("Pas de note disponible", True) }}
+					</th>
+					<th class="align-middle">
+						<a class="btn btn-primary" href="{{ url_for('avertissement_sympa_pour_geeks') }}" role="button">Ajouter</a>
+					</th>
+					<th class="align-middle">
+						<a class="btn btn-warning" href="{{ url_for('film_update_wtf', id_film_btn_edit_html=row.idComputer) }}" role="button">Modifier</a>
+				  	</th>
+					<th class="align-middle">
+						<a class="btn btn-danger" href="{{ url_for('film_delete_wtf', id_film_btn_delete_html=row.idComputer) }}" role="button">Supprimer</a>
+					</th>
+					<th>
+						<a class="btn btn-warning" href="{{ url_for('edit_genre_film_selected', id_film_computers_edit_html=row.idComputer) }}" role="button">Modifier la note</a>
+					</th>
 				</tr>
 			</tbody>
 			{% else %}
 				<tbody>
 					<tr>
 						<td>
-							Aucun film.
+							Aucun ordinateur.
 						</td>
 						<td>
-							<a class="btn btn-primary" href="{{ url_for('avertissement_sympa_pour_geeks') }}" role="button">Add</a>
+							<a class="btn btn-primary" href="{{ url_for('avertissement_sympa_pour_geeks') }}" role="button">Ajouter</a>
 						</td>
 					</tr>
 				</tbody>
 			{% endfor %}
-
 		</table>
 	</div>
 </div>

@@ -102,11 +102,12 @@ def genres_ajouter_wtf():
     if request.method == "POST":
         try:
             if form.validate_on_submit():
-                com_hostname_wtf = form.com_hostname.data  # Utilisez le champ correct ici
-                com_hostname = com_hostname_wtf.lower()
-                valeurs_insertion_dictionnaire = {"value_com_hostname": com_hostname}
+                com_computer_wtf = form.com_hostname.data
+                com_computer = com_computer_wtf.lower()
+                valeurs_insertion_dictionnaire = {"value_comHostname": com_computer}
+                print('valeurs_insertion_dictionnaire', valeurs_insertion_dictionnaire)
 
-                strsql_insert_genre = """INSERT INTO t_computer (idComputer, comHostname) VALUES (NULL, %(value_com_hostname)s) """
+                strsql_insert_genre = """INSERT INTO t_computer (idComputer, comHostname) VALUES (NULL,%(value_comHostname)s) """
                 with DBconnection() as mconn_bd:
                     mconn_bd.execute(strsql_insert_genre, valeurs_insertion_dictionnaire)
 
@@ -161,8 +162,8 @@ def genre_update_wtf():
                                           "value_description_genre_essai": description_genre_essai}
             print("valeur_update_dictionnaire ", valeur_update_dictionnaire)
 
-            str_sql_update_intitulegenre = """UPDATE t_categorie SET nom_c = %(value_name_genre)s, 
-            description_c = %(value_description_genre_essai)s WHERE id_categorie = %(value_id_genre)s """
+            str_sql_update_intitulegenre = """UPDATE t_computer SET nom_c = %(value_name_genre)s, 
+            description_c = %(value_description_genre_essai)s WHERE id_computer = %(value_id_genre)s """
             with DBconnection() as mconn_bd:
                 mconn_bd.execute(str_sql_update_intitulegenre, valeur_update_dictionnaire)
 
@@ -170,7 +171,7 @@ def genre_update_wtf():
             print(f"Donnée mise à jour !!")
             return redirect(url_for('genres_afficher', order_by="ASC", id_genre_sel=id_genre_update))
         elif request.method == "GET":
-            str_sql_id_genre = "SELECT id_categorie, nom_c, description_c FROM t_categorie WHERE id_categorie = %(value_id_genre)s"
+            str_sql_id_genre = "SELECT id_computer, nom_c, description_c FROM t_computer WHERE id_computer = %(value_id_genre)s"
             valeur_select_dictionnaire = {"value_id_genre": id_genre_update}
             with DBconnection() as mybd_conn:
                 mybd_conn.execute(str_sql_id_genre, valeur_select_dictionnaire)

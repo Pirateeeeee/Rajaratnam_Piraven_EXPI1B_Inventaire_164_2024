@@ -58,6 +58,7 @@ def film_add_wtf():
     return render_template("films/film_add_wtf.html", form_add_film=form_add_film)
 
 
+
 """Editer(update) un film qui a été sélectionné dans le formulaire "films_genres_afficher.html"
 Auteur : OM 2022.04.11
 Définition d'une "route" /film_update
