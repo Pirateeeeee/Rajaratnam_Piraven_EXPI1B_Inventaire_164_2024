@@ -225,8 +225,8 @@ def genre_delete_wtf():
             valeur_select_dictionnaire = {"value_id_genre": id_genre_delete}
             print(id_genre_delete, type(id_genre_delete))
 
-            str_sql_genres_films_delete = """SELECT id_materiel, nom_m, id_computer, nom_c FROM t_materiel 
-                                            INNER JOIN t_computer ON t_materiel.id_materiel = t_computer.id_computer
+            str_sql_genres_films_delete = """SELECT id_computer, nom_m, id_computer, nom_c FROM t_computer 
+                                            INNER JOIN t_computer ON t_computer.id_computer = t_computer.id_computer
                                             WHERE id_computer = %(value_id_genre)s"""
             with DBconnection() as mydb_conn:
                 mydb_conn.execute(str_sql_genres_films_delete, valeur_select_dictionnaire)
